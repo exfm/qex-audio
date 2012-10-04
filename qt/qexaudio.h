@@ -7,6 +7,7 @@
 
 class QExAudio : public QObject {
     Q_OBJECT
+
 public:
     explicit QExAudio(QObject *parent = 0);
 
@@ -16,7 +17,7 @@ private:
     QUrl nowPlayingUrl;
 
 signals:
-
+    void playingFinished();
 
 public slots:
     void play();

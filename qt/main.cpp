@@ -1,17 +1,24 @@
-#include <QtCore/QCoreApplication>
+#include <QApplication>
 #include <phonon/MediaObject>
 #include "qexaudio.h"
 
+#include <QtWebKit>
+
 int main(int argc, char *argv[])
 {
-    QCoreApplication a(argc, argv);
-
-    QString url = "http://popplers5.bandcamp.com/download/track?enc=mp3-128&id=810720011&stream=1";
+    QApplication app(argc, argv);
 
     QExAudio * audioPlayer = new QExAudio();
-    audioPlayer->src(url);
-    audioPlayer->load();
-    audioPlayer->play();
 
-    return a.exec();
+//    QString url = "http://api.soundcloud.com/tracks/3377639/stream?consumer_key=leL50hzZ1H8tAdKCLSCnw";
+//    audioPlayer->src(url);
+//    audioPlayer->load();
+//    audioPlayer->play();
+
+    QWebView * view = new QWebView();
+    view->load(QUrl("qrc:/view.html"));
+    view->page()->mainFrame()->addToJavaScriptWindowObject("audioplayer", audioPlayer);
+    view->show();
+
+    return app.exec();
 }

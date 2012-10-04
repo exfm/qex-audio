@@ -1,5 +1,6 @@
 #include "qexaudio.h"
 #include <phonon/MediaObject>
+#include <QDebug>
 
 QExAudio::QExAudio(QObject *parent) :
     QObject(parent) {
@@ -10,14 +11,17 @@ QExAudio::QExAudio(QObject *parent) :
 
 void QExAudio::load() {
     music->setCurrentSource(Phonon::MediaSource(nowPlayingUrl));
+    qDebug() << nowPlayingUrl;
 }
 
 void QExAudio::src(QString urlString) {
     nowPlayingUrl = QUrl(urlString);
+    qDebug() << nowPlayingUrl;
 }
 
 void QExAudio::play() {
     music->play();
+    qDebug() << nowPlayingUrl;
 
 }
 
