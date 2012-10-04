@@ -1,2 +1,7 @@
 SOURCES += \
-    main.cpp
+    qexaudio.cpp
+
+QT += phonon
+
+HEADERS += \
+    qexaudio.h
