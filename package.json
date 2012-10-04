@@ -1,0 +1,20 @@
+{
+  "author": " <>",
+  "name": "qexaudio",
+  "description": "This is a Qt native audio player that mimics the HTML5 Audio APII.  Audio is played using Phonon, so the Phonon libraries and a suitable backend must be running on the Qt client for this work.",
+  "version": "0.0.0",
+  "homepage": "http://github.com/exfm/qexaudio",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/exfm/qexaudio.git"
+  },
+  "scripts": {
+    "test": "grunt test"
+  },
+  "dependencies": {},
+  "devDependencies": {},
+  "optionalDependencies": {},
+  "engines": {
+    "node": "*"
+  }
+}
