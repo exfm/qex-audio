@@ -1,5 +1,6 @@
 SOURCES += \
-    qexaudio.cpp
+    qexaudio.cpp \
+    main.cpp
 
 QT += phonon
 
