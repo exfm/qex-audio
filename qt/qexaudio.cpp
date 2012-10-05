@@ -11,21 +11,21 @@ QExAudio::QExAudio(QObject *parent) :
 
 void QExAudio::load() {
     music->setCurrentSource(Phonon::MediaSource(nowPlayingUrl));
-    qDebug() << nowPlayingUrl;
+    emit audioLoaded();
 }
 
 void QExAudio::src(QString urlString) {
     nowPlayingUrl = QUrl(urlString);
-    qDebug() << nowPlayingUrl;
+    emit sourceChanged();
 }
 
 void QExAudio::play() {
     music->play();
-    qDebug() << nowPlayingUrl;
-
+    emit audioPlaying();
 }
 
 void QExAudio::pause() {
     music->pause();
+    emit audioPaused();
 }
 

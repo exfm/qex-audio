@@ -18,6 +18,10 @@ private:
 
 signals:
     void playingFinished();
+    void audioPlaying();
+    void audioPaused();
+    void audioLoaded();
+    void sourceChanged();
 
 public slots:
     void play();
