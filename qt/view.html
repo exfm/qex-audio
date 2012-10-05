@@ -1,16 +1,16 @@
 <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
 <script type="text/javascript">
 
-var numTicks = 0;
 
 function alertOnPlay(event, vars){
     if (event == "finished") {
         alert(numTicks);
     }
-    else if (event == "tick") {
-        numTicks = numTicks + parseInt(vars[0]);
+    else if (event == "timeupdate") {
+        var currentTime = Math.floor(parseInt(vars[0])/1000);
+        alert("current time: "+currentTime);
     }
-    else if (event == "src") {
+    else if (event == "sourceSet") {
         alert(event+": "+vars[0]);
     }
 
@@ -18,7 +18,7 @@ function alertOnPlay(event, vars){
 }
 
 audioplayer.nativeEvent.connect(alertOnPlay);
-audioplayer.sendToNative("src", new Array("http://api.soundcloud.com/tracks/3377639/stream?consumer_key=leL50hzZ1H8tAdKCLSCnw"));
+audioplayer.sendToNative("setSource", new Array("http://api.soundcloud.com/tracks/3377639/stream?consumer_key=leL50hzZ1H8tAdKCLSCnw"));
 audioplayer.sendToNative("load", []);
 audioplayer.sendToNative("play", []);
 

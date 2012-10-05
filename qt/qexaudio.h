@@ -24,6 +24,7 @@ public slots:
     void sendToNative(QString event, QStringList vars);
     void receiveTick(qint64 tick);
     void receiveFinished();
+    void receiveDurationAvailable();
 
 protected:
 
