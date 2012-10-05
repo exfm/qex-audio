@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QUrl>
 #include <phonon/MediaObject>
+#include <QStringList>
 
 class QExAudio : public QObject {
     Q_OBJECT
@@ -17,17 +18,12 @@ private:
     QUrl nowPlayingUrl;
 
 signals:
-    void playingFinished();
-    void audioPlaying();
-    void audioPaused();
-    void audioLoaded();
-    void sourceChanged();
+    void nativeEvent(QString event, QStringList vars);
 
 public slots:
-    void play();
-    void pause();
-    void load();
-    void src(QString urlString);
+    void sendToNative(QString event, QStringList vars);
+    void receiveTick(qint64 tick);
+    void receiveFinished();
 
 protected:
 

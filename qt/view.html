@@ -1,7 +1,26 @@
 <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
 <script type="text/javascript">
-audioplayer.src("http://api.soundcloud.com/tracks/3377639/stream?consumer_key=leL50hzZ1H8tAdKCLSCnw");
-audioplayer.load();
-audioplayer.play();
+
+var numTicks = 0;
+
+function alertOnPlay(event, vars){
+    if (event == "finished") {
+        alert(numTicks);
+    }
+    else if (event == "tick") {
+        numTicks = numTicks + parseInt(vars[0]);
+    }
+    else if (event == "src") {
+        alert(event+": "+vars[0]);
+    }
+
+
+}
+
+audioplayer.nativeEvent.connect(alertOnPlay);
+audioplayer.sendToNative("src", new Array("http://api.soundcloud.com/tracks/3377639/stream?consumer_key=leL50hzZ1H8tAdKCLSCnw"));
+audioplayer.sendToNative("load", []);
+audioplayer.sendToNative("play", []);
+
 </script>
 
