@@ -15,17 +15,12 @@ QExAudio::QExAudio(QObject *parent) :
     QObject::connect(music, SIGNAL(tick(qint64)), this, SLOT(receiveTick(qint64)));
     QObject::connect(music, SIGNAL(finished()), this, SLOT(receiveFinished()));
 
-    // if we have loaded a song and are ready to play
-    QObject::connect(music, SIGNAL(stateChanged(Phonon::StoppedState,Phonon::LoadingState)), this, SLOT(receiveReady()));
+    // state change event
+    QObject::connect(music, SIGNAL(stateChanged(Phonon::State,Phonon::State)), this, SLOT(receiveStateChange(Phonon::State,Phonon::State)));
 
-    // if we change from playing to paused
-    // note: when loading a song, phonon goes from stopped to paused before paused to playing.
-    // this is a case we shouldn't have to worry about
-    QObject::connect(music, SIGNAL(stateChanged(Phonon::PausedState,Phonon::PlayingState)), this, SLOT(receivePause()));
+    // progress
+    QObject::connect(music, SIGNAL(bufferStatus(int)), this, SLOT(receiveBufferChanged(int)));
 
-    // if we change from paused to playing or loading to playing
-    QObject::connect(music, SIGNAL(stateChanged(Phonon::PlayingState,Phonon::LoadingState)), this, SLOT(receivePause()));
-    QObject::connect(music, SIGNAL(stateChanged(Phonon::PlayingState,Phonon::PausedState)), this, SLOT(receivePause()));
 
 }
 
@@ -115,20 +110,49 @@ void QExAudio::receiveDurationAvailable() {
     emit nativeEvent(event);
 }
 
-void QExAudio::receivePlay() {
+void QExAudio::receiveStateChange(Phonon::State newState, Phonon::State oldState) {
     QVariantMap event;
-    event.insert("name", "play");
-    emit nativeEvent(event);
+    if (oldState == Phonon::LoadingState) {
+        if (newState == Phonon::StoppedState) {
+            // loading to ready
+            event.insert("name", "canplay");
+            emit nativeEvent(event);
+        }
+    }
+    else if (oldState == Phonon::StoppedState) {
+        if (newState == Phonon::PlayingState) {
+            // stopped to playing
+            event.insert("name", "play");
+            emit nativeEvent(event);
+        }
+    }
+    else if (oldState == Phonon::PausedState) {
+        if (newState == Phonon::PlayingState) {
+            // paused to playing
+            event.insert("name", "play");
+            emit nativeEvent(event);
+        }
+    }
+    else if (oldState == Phonon::PlayingState) {
+        if (newState == Phonon::PausedState) {
+            // playing to paused
+            event.insert("name", "pause");
+            emit nativeEvent(event);
+        }
+    }
 }
 
-void QExAudio::receiveReady() {
+void QExAudio::receiveBufferChanged(int percentFilled) {
     QVariantMap event;
-    event.insert("name", "canplay");
-    emit nativeEvent(event);
-}
+    QVariantList ranges;
+    QVariantMap range;
 
-void QExAudio::receivePause() {
-    QVariantMap event;
-    event.insert("name", "pause");
+    float durationAvailable = (float) ((music->totalTime()) / (float)1000) * ((float) percentFilled / (float) 100);
+
+    range.insert("start", 0);
+    range.insert("duration", durationAvailable);
+    ranges.insert(0, range);
+    event.insert("name", "progress");
+    event.insert("ranges", ranges);
     emit nativeEvent(event);
 }

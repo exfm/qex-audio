@@ -24,8 +24,8 @@ var pauseSignal = {
 
 
 audioplayer.nativeEvent.connect(eventAlert);
-audioplayer.sendToNative(setSourceSignal);
-audioplayer.sendToNative(loadSignal);
-audioplayer.sendToNative(playSignal);
+audioplayer.exec(setSourceSignal);
+audioplayer.exec(loadSignal);
+audioplayer.exec(playSignal);
 
 </script>

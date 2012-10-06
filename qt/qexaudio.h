@@ -25,9 +25,8 @@ public slots:
     void receiveTick(qint64 tick);
     void receiveFinished();
     void receiveDurationAvailable();
-    void receivePlay();
-    void receivePause();
-    void receiveReady();
+    void receiveStateChange(Phonon::State newState, Phonon::State oldState);
+    void receiveBufferChanged(int percentFilled);
 
 protected:
 
