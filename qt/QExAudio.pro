@@ -11,4 +11,5 @@ HEADERS += \
     qexaudio.h
 
 OTHER_FILES += \
-    view.html
+    view.html \
+    ../index.js

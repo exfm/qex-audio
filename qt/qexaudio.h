@@ -18,13 +18,16 @@ private:
     QUrl nowPlayingUrl;
 
 signals:
-    void nativeEvent(QString event, QStringList vars);
+    void nativeEvent(QVariantMap event);
 
 public slots:
-    void sendToNative(QString event, QStringList vars);
+    void exec(QVariantMap receivedEvent);
     void receiveTick(qint64 tick);
     void receiveFinished();
     void receiveDurationAvailable();
+    void receivePlay();
+    void receivePause();
+    void receiveReady();
 
 protected:
 
