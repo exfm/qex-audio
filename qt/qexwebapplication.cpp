@@ -26,5 +26,6 @@ void QExWebApplication::loadAndShow(QString url) {
 
 void QExWebApplication::addJavaScriptObject()
 {
+    this->audioPlayer->init();
     this->view->page()->mainFrame()->addToJavaScriptWindowObject("audioplayer", this->audioPlayer);
 }

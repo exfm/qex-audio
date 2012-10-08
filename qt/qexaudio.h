@@ -11,6 +11,7 @@ class QExAudio : public QObject {
 
 public:
     explicit QExAudio(QObject *parent = 0);
+    void init();
 
 private:
     Phonon::MediaObject *music;
