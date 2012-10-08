@@ -1,25 +1,18 @@
 #include <QApplication>
-#include <phonon/MediaObject>
-#include "qexaudio.h"
-
+#include <qexwebapplication.h>
 #include <QtWebKit>
 
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
 
-    QExAudio * audioPlayer = new QExAudio();
+    QExWebApplication * thisApp = new QExWebApplication();
+    thisApp->loadAndShow("qrc:/index.html");
 
+    QObject::connect(thisApp->view->page()->mainFrame(), SIGNAL(javaScriptWindowObjectCleared()), thisApp, SLOT(addJavaScriptObject()));
 
-//    QString url = "http://api.soundcloud.com/tracks/3377639/stream?consumer_key=leL50hzZ1H8tAdKCLSCnw";
-//    audioPlayer->src(url);
-//    audioPlayer->load();
-//    audioPlayer->play();
+    // QObject::connect(view->page()->mainFrame(), SIGNAL(javaScriptWindowObjectCleared()), webPage, SLOT(addJavaScriptObject(QWebView*)))
 
-    QWebView * view = new QWebView();
-    view->load(QUrl("qrc:/view.html"));
-    view->page()->mainFrame()->addToJavaScriptWindowObject("audioplayer", audioPlayer);
-    view->show();
 
     return app.exec();
 }

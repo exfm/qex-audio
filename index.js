@@ -1,6 +1,5 @@
 (function(){
 
-
 // constructor
 function QEXAudio(){
     var eventEmitter;
@@ -41,7 +40,7 @@ function QEXAudio(){
     // register event listener with native
 
     //window.cordova.exec(this.eventHandler.bind(this), this.errorHandler.bind(this), "QEXAudio", "eventHandler", []);
-    audioplayer.nativeEvent.connect(this.eventHandler);
+    audioplayer.nativeEvent.connect(this.eventHandler.bind(this));
 
     console.log('QEXAudio installed');
 }
