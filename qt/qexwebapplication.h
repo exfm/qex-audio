@@ -21,6 +21,9 @@ signals:
     
 public slots:
     void addJavaScriptObject();
+
+protected:
+    virtual void keyPressEvent(QKeyEvent *event);
 };
 
 #endif // QEXWEBAPPLICATION_H

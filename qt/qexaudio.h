@@ -17,7 +17,7 @@ private:
     Phonon::MediaObject *music;
     int status;
     QUrl nowPlayingUrl;
-    bool hasBeenInitialized;
+    bool canPlay;
 
 signals:
     void nativeEvent(QVariantMap event);
