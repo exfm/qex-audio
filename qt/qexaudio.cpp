@@ -5,6 +5,9 @@
 QExAudio::QExAudio(QObject *parent) :
     QObject(parent) {
     // constructor
+    qDebug() << "QExAudio instantiated.";
+    this->nowPlayingUrl = "";
+    this->hasBeenInitialized = false;
 }
 
 // slots that receive signals from webkit
@@ -22,17 +25,25 @@ void QExAudio::exec(QVariantMap receivedEvent) {
     if (func == "play") {
         // play audio, send playing event
         // @todo check that the audio is in a playable state
-        qDebug() << "QExAudio: play event";
-        music->play();
+        qDebug() << "QExAudio: got play event from client";
+        this->music->play();
+        qDebug() << "Current state: " << this->music->state();
+
         QVariantMap event;
         event.insert("name", "play");
+        emit nativeEvent(event);
+
+        event.clear();
+        event.insert("name", "playing");
         emit nativeEvent(event);
     }
 
     else if (func == "pause") {
         // pause currently-playing audio, send an event back that the stream has been paused
         // @todo should check state to make sure audio is pausable
-        music->pause();
+        if (this->music->state() == Phonon::PlayingState) {
+           this->music->pause();
+        }
         qDebug() << "QExAudio pause event";
         QVariantMap event;
         event.insert("name", "pause");
@@ -41,7 +52,7 @@ void QExAudio::exec(QVariantMap receivedEvent) {
 
     else if (func == "load") {
         // load our source into the audio player, send an event back that the audio has been loaded
-        music->setCurrentSource(nowPlayingUrl);
+        this->music->setCurrentSource(this->nowPlayingUrl);
         qDebug() << "QExAudio: load event";
         QVariantMap event;
         event.insert("name", "load");
@@ -50,12 +61,11 @@ void QExAudio::exec(QVariantMap receivedEvent) {
 
     else if (func == "setSource" && vars.length() > 0) {
         // set our new source, send an event back that the source has been set
-        nowPlayingUrl = QUrl(vars[0]);
+
+        this->nowPlayingUrl = QUrl(vars[0]);
+        this->music->setCurrentSource(this->nowPlayingUrl);
+
         qDebug() << "QExAudio: set source event";
-        QVariantMap event;
-        event.insert("name", "sourceSet");
-        event.insert("sourceUrl", nowPlayingUrl.toString());
-        emit nativeEvent(event);
     }
 
     else if (func == "nowPlaying" && vars.length() > 0) {
@@ -68,9 +78,9 @@ void QExAudio::exec(QVariantMap receivedEvent) {
         QVariantMap event;
         event.insert("event", "timeUpdate");
         event.insert("time", seekTime);
-        if (music->state()) {
+        if (this->music->state()) {
             // seek takes time in milliseconds
-            music->seek(seekTime.toInt()*1000);
+            this->music->seek(seekTime.toInt()*1000);
             emit nativeEvent(event);
         }
     }
@@ -81,8 +91,9 @@ void QExAudio::exec(QVariantMap receivedEvent) {
 void QExAudio::receiveTick(qint64 tick) {
     // update time every half second
     QVariantMap event;
+    int timeUpdate = (int) tick/1000;
     event.insert("name", "timeupdate");
-    event.insert("currentTime", QString::number(tick));
+    event.insert("currentTime", QString::number(timeUpdate));
     emit nativeEvent(event);
 }
 
@@ -93,18 +104,26 @@ void QExAudio::receiveFinished() {
     emit nativeEvent(event);
 }
 
-void QExAudio::receiveDurationAvailable() {
+void QExAudio::receiveDurationAvailable(qint64 duration) {
     QVariantMap event;
     event.insert("name", "durationchanged");
-    int durationInSeconds = (int) (music->totalTime())/1000;
+    int durationInSeconds = (int) (duration)/1000;
+    qDebug() << durationInSeconds;
     event.insert("duration", durationInSeconds);
     emit nativeEvent(event);
 }
 
 void QExAudio::receiveStateChange(Phonon::State newState, Phonon::State oldState) {
+    qDebug() << "State change from " << oldState << "to " << newState;
     QVariantMap event;
     if (oldState == Phonon::LoadingState) {
         if (newState == Phonon::StoppedState) {
+            // loading to ready
+            qDebug() << "Emitting canplay event";
+            event.insert("name", "canplay");
+            emit nativeEvent(event);
+        }
+        else if (newState == Phonon::PausedState) {
             // loading to ready
             event.insert("name", "canplay");
             emit nativeEvent(event);
@@ -113,14 +132,16 @@ void QExAudio::receiveStateChange(Phonon::State newState, Phonon::State oldState
     else if (oldState == Phonon::StoppedState) {
         if (newState == Phonon::PlayingState) {
             // stopped to playing
-            event.insert("name", "play");
+            qDebug() << "Emitting playing event";
+            event.insert("name", "playing");
             emit nativeEvent(event);
         }
     }
     else if (oldState == Phonon::PausedState) {
         if (newState == Phonon::PlayingState) {
             // paused to playing
-            event.insert("name", "play");
+            qDebug() << "Emitting playing event";
+            event.insert("name", "playing");
             emit nativeEvent(event);
         }
     }
@@ -138,7 +159,7 @@ void QExAudio::receiveBufferChanged(int percentFilled) {
     QVariantList ranges;
     QVariantMap range;
 
-    float durationAvailable = (float) ((music->totalTime()) / (float)1000) * ((float) percentFilled / (float) 100);
+    float durationAvailable = (float) ((this->music->totalTime()) / (float)1000) * ((float) percentFilled / (float) 100);
 
     range.insert("start", 0);
     range.insert("duration", durationAvailable);
@@ -149,19 +170,27 @@ void QExAudio::receiveBufferChanged(int percentFilled) {
 }
 
 void QExAudio::init() {
-    qDebug() << "init";
-    // statechanged is newState, oldState
-    // null to ready: (1, 0)
-    //
-    music = createPlayer(Phonon::MusicCategory,Phonon::MediaSource(""));
-    music->setTickInterval(500);
+    if (!this->hasBeenInitialized) {
+        qDebug() << "init";
+        // statechanged is newState, oldState
+        // null to ready: (1, 0)
+        //
+        this->music = createPlayer(Phonon::MusicCategory,Phonon::MediaSource(this->nowPlayingUrl));
+        this->music->setTickInterval(500);
 
-    QObject::connect(music, SIGNAL(tick(qint64)), this, SLOT(receiveTick(qint64)));
-    QObject::connect(music, SIGNAL(finished()), this, SLOT(receiveFinished()));
+        QObject::connect(this->music, SIGNAL(tick(qint64)), this, SLOT(receiveTick(qint64)));
+        QObject::connect(this->music, SIGNAL(finished()), this, SLOT(receiveFinished()));
 
-    // state change event
-    QObject::connect(music, SIGNAL(stateChanged(Phonon::State,Phonon::State)), this, SLOT(receiveStateChange(Phonon::State,Phonon::State)));
+        // state change event
+        QObject::connect(this->music, SIGNAL(stateChanged(Phonon::State,Phonon::State)), this, SLOT(receiveStateChange(Phonon::State,Phonon::State)));
 
-    // progress
-    QObject::connect(music, SIGNAL(bufferStatus(int)), this, SLOT(receiveBufferChanged(int)));
+        // progress
+        QObject::connect(this->music, SIGNAL(bufferStatus(int)), this, SLOT(receiveBufferChanged(int)));
+        this->hasBeenInitialized = true;
+
+        // duration
+        QObject::connect(this->music, SIGNAL(totalTimeChanged(qint64)), this, SLOT(receiveDurationAvailable(qint64)));
+
+    }
+
 }

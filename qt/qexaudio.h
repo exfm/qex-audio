@@ -17,6 +17,7 @@ private:
     Phonon::MediaObject *music;
     int status;
     QUrl nowPlayingUrl;
+    bool hasBeenInitialized;
 
 signals:
     void nativeEvent(QVariantMap event);
@@ -25,7 +26,7 @@ public slots:
     void exec(QVariantMap receivedEvent);
     void receiveTick(qint64 tick);
     void receiveFinished();
-    void receiveDurationAvailable();
+    void receiveDurationAvailable(qint64 duration);
     void receiveStateChange(Phonon::State newState, Phonon::State oldState);
     void receiveBufferChanged(int percentFilled);
 
